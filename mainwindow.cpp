@@ -16,6 +16,8 @@
 #include "primitives/plane.h"
 #include "primitives/rectangle.h"
 #include "triangles/triangle.h"
+#include "compounded/grid.h"
+#include "instance.h"
 
 //materials
 #include "matte.h"
@@ -23,6 +25,8 @@
 #include "reflective.h"
 #include "emissive.h"
 #include "glossyreflector.h"
+#include "sv_matte.h"
+#include "image.h"
 
 //lights
 #include "directional.h"
@@ -33,228 +37,85 @@
 #include "orthographic.h"
 #include "pinhole.h"
 
+// texture
+#include "imagetexture.h"
+
 //sampler
 #include "multijittered.h"
 
+//mapping
+#include "sphericalmap.h"
+
 #include <iostream>
+#include <cv.h>
+#include <highgui.h>
+#include <cxcore.h>
 using namespace std;
 
 void Scene::build(void)
 {
-    int num_samples = 400;
+    int num_samples = 16;
 
-        vp.set_hres(600);
-        vp.set_vres(600);
+        vp.set_hres(700);
+        vp.set_vres(700);
         vp.set_samples(num_samples);
-        vp.set_max_depth(30);
 
-        tracer_ptr = new Whitted(this);
+        background_color = black;
 
-        Pinhole* pinhole_ptr = new Pinhole;
-        pinhole_ptr->set_eye(7.5, 3, 9.5);
-        pinhole_ptr->set_lookat(5, 2.5, 0);
-        pinhole_ptr->set_view_distance(800);
-        pinhole_ptr->compute_uvw();
-        set_camera(pinhole_ptr);
+        tracer_ptr = new RayCast(this);
 
-
-
-        // four point lights near the ceiling
-        // these don't use distance attenuation
-
-        PointLight* light_ptr1 = new PointLight;
-        light_ptr1->set_location(10, 10, 0);
-        light_ptr1->scale_radiance(2.0);
-        light_ptr1->set_shadows(true);
-        add_light(light_ptr1);
-
-        PointLight* light_ptr2 = new PointLight;
-        light_ptr2->set_location(0, 10, 10);
-        light_ptr2->scale_radiance(2.0);
-        light_ptr2->set_shadows(true);
-        add_light(light_ptr2);
-
-        PointLight* light_ptr3 = new PointLight;
-        light_ptr3->set_location(-10, 10, 0);
-        light_ptr3->scale_radiance(2.0);
-        light_ptr3->set_shadows(true);
-        add_light(light_ptr3);
-
-        PointLight* light_ptr4 = new PointLight;
-        light_ptr4->set_location(0, 10, -10);
-        light_ptr4->scale_radiance(2.0);
-        light_ptr4->set_shadows(true);
-        add_light(light_ptr4);
+        Pinhole* camera_ptr = new Pinhole;
+        camera_ptr->set_eye(0, 0, 65);
+        camera_ptr->set_lookat(0.0);
+        camera_ptr->set_view_distance(21000.0);
+        camera_ptr->compute_uvw();
+        set_camera(camera_ptr);
 
 
-        // sphere
-        // this is the only reflective object with a direct illumination shading component
-
-        Reflective* reflective_ptr1 = new Reflective;
-        reflective_ptr1->set_ka(0.1);
-        reflective_ptr1->set_kd(0.4);
-        reflective_ptr1->set_cd(0, 0, 1);   	 // blue
-        reflective_ptr1->set_ks(0.25);
-        reflective_ptr1->set_exp(100.0);
-        reflective_ptr1->set_kr(0.85);
-        reflective_ptr1->set_cr(0.75, 0.75, 1);  // blue
-
-        Sphere*	sphere_ptr1 = new Sphere(Point3D(0, 0.5, 0), 4);
-        sphere_ptr1->set_material(reflective_ptr1);
-        add_object(sphere_ptr1);
+        Directional* light_ptr = new Directional;
+        light_ptr->set_direction(-0.25, 0.4, 1);
+        light_ptr->scale_radiance(2.5);
+        add_light(light_ptr);
 
 
-        // the walls, the ceiling, and the floor of the room are defined as planes
-        // the shape is a cube
+        // image:
 
-        double room_size = 11.0;
-
-        // floor  (-ve yw)
-
-        Matte* matte_ptr1 = new Matte;
-        matte_ptr1->set_ka(0.1);
-        matte_ptr1->set_kd(0.50);
-        matte_ptr1->set_cd(0.25);     // medium grey
-
-        Plane* floor_ptr = new Plane(Point3D(0, -room_size,  0), Normal(0, 1, 0));
-        floor_ptr->set_material(matte_ptr1);
-        add_object(floor_ptr);
+        Image* image_ptr = new Image;
+    //	image_ptr->read_ppm_file("EarthLowRes.ppm");
+        image_ptr->read_image("F:\\Code\\temp\\rendering-code\\wxraytracer\\TextureFiles\\jpg\\EarthHighRes.jpg");
 
 
-        // ceiling  (+ve yw)
+        // mapping:
 
-        Matte* matte_ptr2 = new Matte;
-        matte_ptr2->set_ka(0.35);
-        matte_ptr2->set_kd(0.50);
-        matte_ptr2->set_cd(white);
-
-        Plane* ceiling_ptr = new Plane(Point3D(0, room_size,  0), Normal(0, -1, 0));
-        ceiling_ptr->set_material(matte_ptr2);
-        add_object(ceiling_ptr);
+        SphericalMap* map_ptr = new SphericalMap;
 
 
-        // back wall  (-ve zw)
+        // image based texture:
 
-        Matte* matte_ptr3 = new Matte;
-        matte_ptr3->set_ka(0.15);
-        matte_ptr3->set_kd(0.60);
-        matte_ptr3->set_cd(0.5, 0.75, 0.75);     // cyan
-
-        Plane* backWall_ptr = new Plane(Point3D(0, 0,  -room_size), Normal(0, 0, 1));
-        backWall_ptr->set_material(matte_ptr3);
-        add_object(backWall_ptr);
-
-        // front wall  (+ve zw)
-
-        Plane* frontWall_ptr = new Plane(Point3D(0, 0,  room_size), Normal(0, 0, -1));
-        frontWall_ptr->set_material(matte_ptr3->clone());
-        add_object(frontWall_ptr);
-
-        // left wall  (-ve xw)
-
-        Matte* matte_ptr4 = new Matte;
-        matte_ptr4->set_ka(0.15);
-        matte_ptr4->set_kd(0.60);
-        matte_ptr4->set_cd(0.71, 0.40, 0.20);   // orange
-
-        Plane* leftWall_ptr = new Plane(Point3D(-room_size, 0, 0), Normal(1, 0, 0));
-        leftWall_ptr->set_material(matte_ptr4);
-        add_object(leftWall_ptr);
-
-        // right wall  (+ve xw)
-
-        Plane* rightWall_ptr = new Plane(Point3D(room_size, 0, 0), Normal(-1, 0, 0));
-        rightWall_ptr->set_material(matte_ptr4->clone());
-        add_object(rightWall_ptr);
+        ImageTexture* texture_ptr = new ImageTexture;
+        texture_ptr->set_image(image_ptr);
+        texture_ptr->set_mapping(map_ptr);
 
 
-        // mirrors on the walls
-        // the right wall has no mirror
+        // textured material:
 
-        double mirror_size 	= 8;  	// the mirror size
-        double offset 		= 1.0;  // the mirror offset from the walls
-
-        // mirror reflection material for the left wall mirror
-
-        Reflective* reflective_ptr2 = new Reflective;
-        reflective_ptr2->set_ka(0);
-        reflective_ptr2->set_kd(0);
-        reflective_ptr2->set_cd(black);
-        reflective_ptr2->set_ks(0);
-        reflective_ptr2->set_kr(0.9);
-        reflective_ptr2->set_cr(0.9, 1.0, 0.9);  // light green
-
-        // glossy reflector material for the back and front mirrors
-
-        float exp = 25000.0;
-        GlossyReflector* glossy_reflector_ptr = new GlossyReflector;
-        glossy_reflector_ptr->set_samples(num_samples, exp);
-        glossy_reflector_ptr->set_ka(0.0);
-        glossy_reflector_ptr->set_kd(0.0);
-        glossy_reflector_ptr->set_ks(0.0);
-        glossy_reflector_ptr->set_exp(exp);
-        glossy_reflector_ptr->set_cd(black);
-        glossy_reflector_ptr->set_kr(0.9);
-        glossy_reflector_ptr->set_exponent(exp);
-        glossy_reflector_ptr->set_cr(0.9, 1.0, 0.9);  // light green
+        SV_Matte* sv_matte_ptr = new SV_Matte;
+        sv_matte_ptr->set_ka(0.2);
+        sv_matte_ptr->set_kd(0.8);
+        sv_matte_ptr->set_cd(texture_ptr);
 
 
-        // back wall mirror  (-ve zw)
+        // generic sphere:
 
-        Point3D p0;
-        Vector3D a, b;
-
-        p0 = Point3D(-mirror_size, -mirror_size, -(room_size - offset));
-        a = Vector3D(2.0 * mirror_size, 0, 0);
-        b = Vector3D(0, 2.0 * mirror_size, 0);
-        Normal n(0, 0, 1);
-        Rectangle* rectangle_ptr1 = new Rectangle(p0, a, b, n);
-    //	rectangle_ptr1->set_material(reflective_ptr2);
-        rectangle_ptr1->set_material(glossy_reflector_ptr);
-        add_object(rectangle_ptr1);
+        Sphere*	sphere_ptr = new Sphere;
+        sphere_ptr->set_material(sv_matte_ptr);
 
 
-        // front wall mirror  (+ve zw)
+        // rotated sphere
 
-        p0 = Point3D(-mirror_size, -mirror_size, +(room_size - offset));
-        n = Normal(0, 0, -1);
-        Rectangle* rectangle_ptr2 = new Rectangle(p0, a, b, n);
-    //	rectangle_ptr2->set_material(reflective_ptr2);
-        rectangle_ptr2->set_material(glossy_reflector_ptr->clone());
-        add_object(rectangle_ptr2);
-
-
-        // left wall mirror  (-ve xw)
-
-        p0 = Point3D(-(room_size - offset), -mirror_size, +mirror_size);
-        a = Point3D(0, 0, -2.0 * mirror_size);
-        n = Normal(1, 0, 0);
-        Rectangle* rectangle_ptr3 = new Rectangle(p0, a, b, n);
-        rectangle_ptr3->set_material(reflective_ptr2);
-        add_object(rectangle_ptr3);
-
-
-        // horizontal mirror underneath the sphere
-        // this has no direct illumination and a lemon color
-
-        Reflective* reflective_ptr3 = new Reflective;
-        reflective_ptr3->set_ka(0);
-        reflective_ptr3->set_kd(0);
-        reflective_ptr3->set_cd(black);
-        reflective_ptr3->set_ks(0);
-        reflective_ptr3->set_kr(1);
-        reflective_ptr3->set_cr(1, 1, 0.5);  // lemon
-
-        double yw = -4.0;   // the yw location of the mirror
-
-        p0 = Point3D(-mirror_size, yw, -mirror_size);
-        a = Vector3D(0, 0, 2.0 * mirror_size);
-        b = Vector3D(2.0 * mirror_size, 0, 0);
-        n = Normal(0, 1, 0);
-        Rectangle* rectangle_ptr4 = new Rectangle(p0, a, b, n);
-        rectangle_ptr4->set_material(reflective_ptr3);
-        add_object(rectangle_ptr4);
-
+        Instance* earth_ptr = new Instance(sphere_ptr);
+        earth_ptr->rotate_y(60);
+        add_object(earth_ptr);
 
 
     render_res = new RGBColor[vp.hres*vp.vres];
@@ -262,15 +123,21 @@ void Scene::build(void)
 
 void MainWindow::test()
 {
-    QGraphicsScene *scene = ui->graphicsView->scene();
-    QImage img(QSize(600,600),QImage::Format_RGB32);
-    for(int i = 0; i < 600; i++){
-        for(int j = 0; j < 600; j++){
-            img.setPixel(i,j,qRgb(257.0,0,0));
+    Image* image_ptr = new Image;
+        image_ptr->read_image("F:\\Code\\temp\\rendering-code\\wxraytracer\\TextureFiles\\jpg\\Sarah.jpg");
+
+        int row = image_ptr->get_vres(), col = image_ptr->get_hres();
+
+        IplImage *img = cvCreateImage(cvSize(col,row),8,3);
+        for(int i = 0; i < row; i++){
+            for(int j = 0; j < col; j++){
+                RGBColor c = image_ptr->get_color(row - 1 - i,j);
+                CvScalar s = cvScalar(c.b * 255.0, c.g * 255.0, c.r * 255.0);
+                cvSet2D(img,i,j,s);
+            }
         }
-    }
-    scene->clear();
-    scene->addPixmap(QPixmap::fromImage(img));
+        cvShowImage("test",img);
+        cvWaitKey();
 }
 
 void MainWindow::render()
@@ -308,7 +175,6 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->graphicsView->setScene(scene);
     }
     render();
-    //test();
 }
 
 MainWindow::~MainWindow()

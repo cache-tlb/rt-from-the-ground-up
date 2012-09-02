@@ -35,7 +35,7 @@ public:
     hit(const Ray& ray, double& tmin, ShadeRec& sr) const;
 
     virtual bool
-    shadow_hit(const Ray& ray, double& tmin) const;
+    shadow_hit(const Ray& ray, float& tmin) const;
 
 private:
     Point3D	v0, v1, v2;

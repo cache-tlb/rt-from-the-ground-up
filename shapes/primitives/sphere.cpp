@@ -51,6 +51,13 @@ Sphere::operator= (const Sphere& rhs)
 // ------ destructor
 Sphere::~Sphere(void) {}
 
+BBox
+Sphere::get_bounding_box() {
+    return BBox(center.x - radius, center.x + radius,
+                center.y - radius, center.y + radius,
+                center.z - radius, center.z + radius);
+}
+
 // ------ hit
 bool
 Sphere::hit(const Ray& ray, double& tmin, ShadeRec& sr) const {

@@ -119,7 +119,7 @@ Triangle::hit(const Ray& ray, double& tmin, ShadeRec& sr) const {
 
 // ------ shadow_hit
 bool
-Triangle::shadow_hit(const Ray& ray, double& tmin) const {
+Triangle::shadow_hit(const Ray& ray, float &tmin) const {
     double a = v0.x - v1.x, b = v0.x - v2.x, c = ray.d.x, d = v0.x - ray.o.x;
     double e = v0.y - v1.y, f = v0.y - v2.y, g = ray.d.y, h = v0.y - ray.o.y;
     double i = v0.z - v1.z, j = v0.z - v2.z, k = ray.d.z, l = v0.z - ray.o.z;

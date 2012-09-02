@@ -5,7 +5,7 @@
 #include "vector3d.h"
 #include "rgbcolor.h"
 
-#include "scene.h"			// you will need this later on for shadows
+#include "scene.h"			// will need this later on for shadows
 #include "shaderec.h"
 
 class Directional: public Light {
@@ -45,6 +45,10 @@ public:
 
     virtual RGBColor
     L(ShadeRec& sr);
+
+    /* L.B. added*/
+    virtual bool
+    in_shadow(const Ray &ray, const ShadeRec &sr) const;
 
 private:
     float		ls;

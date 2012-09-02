@@ -37,6 +37,9 @@ public:
     void
     set_radius(const double r);
 
+    virtual BBox
+    get_bounding_box();
+
     virtual bool
     hit(const Ray& ray, double& tmin, ShadeRec& s) const;
 

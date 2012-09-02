@@ -1,0 +1,18 @@
+what is done:
+
+mirror reflect
+
+glossy specular
+
+texture mapping (not very well)
+
+-------------------------------
+problems:
+
+SV_Lambertian::sample_f is not implemented actually, neither in Lambertian::sample_f.
+
+some problem in Instance::~Instance(), pointer;
+
+some problem with ImageTexture::image_ptr, should it be released when replaced ?
+
+noise in area light
