@@ -92,7 +92,7 @@ Shape::get_normal(const Point3D& p) {
 void
 Shape::set_bounding_box (void) {}
 
-// ------ set_bounding_box
+// ------ get_bounding_box
 BBox
 Shape::get_bounding_box (void) {
     return BBox();

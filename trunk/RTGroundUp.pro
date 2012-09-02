@@ -17,7 +17,14 @@ INCLUDEPATH += ./utilities \
     ./scene \
     ./samplers \
     ./shapes \
-    ./tracers
+    ./tracers \
+    ./textures \
+    ./mappings
+
+INCLUDEPATH +=  D:/Library/OpenCV/build/include \
+                D:/Library/OpenCV/build/include/opencv
+
+LIBS += D:/Library/OpenCV/build/x86/vc10/lib/*.lib
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -71,7 +78,18 @@ SOURCES += main.cpp\
     shapes/primitives/axisalignedbox.cpp \
     lights/arealight.cpp \
     tracers/arealighting.cpp \
-    materials/emissive.cpp
+    materials/emissive.cpp \
+    shapes/compounded/compound.cpp \
+    shapes/compounded/grid.cpp \
+    utilities/ply.cpp \
+    textures/texture.cpp \
+    mappings/mapping.cpp \
+    mappings/sphericalmap.cpp \
+    utilities/image.cpp \
+    textures/imagetexture.cpp \
+    BRDFs/sv_lambertian.cpp \
+    materials/sv_matte.cpp \
+    utilities/IO/imageio.cpp
 
 HEADERS  += mainwindow.h \
     utilities/matrix.h \
@@ -125,6 +143,17 @@ HEADERS  += mainwindow.h \
     shapes/primitives/axisalignedbox.h \
     lights/arealight.h \
     tracers/arealighting.h \
-    materials/emissive.h
+    materials/emissive.h \
+    shapes/compounded/compound.h \
+    shapes/compounded/grid.h \
+    utilities/ply.h \
+    textures/texture.h \
+    mappings/mapping.h \
+    mappings/sphericalmap.h \
+    utilities/image.h \
+    textures/imagetexture.h \
+    BRDFs/sv_lambertian.h \
+    materials/sv_matte.h \
+    utilities/IO/imageio.h
 
 FORMS    += mainwindow.ui

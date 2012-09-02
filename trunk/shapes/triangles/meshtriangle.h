@@ -49,7 +49,7 @@ public:
     hit(const Ray& ray, double& tmin, ShadeRec& sr) const = 0;
 
     virtual	bool
-    shadow_hit(const Ray& ray, double& tmin) const;
+    shadow_hit(const Ray& ray, float& tmin) const;
 
     void
     compute_normal(const bool reverse_normal);

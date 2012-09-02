@@ -48,7 +48,7 @@ private:
     float		ks;
     RGBColor 	cs;			// specular color
     float		exp; 		// specular exponent
-    Sampler*	sampler;    // for use in sample_f
+    //Sampler*	sampler;    // for use in sample_f
 };
 
 // ------ set_ks

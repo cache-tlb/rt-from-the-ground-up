@@ -8,9 +8,9 @@
 
 // ------ default constructor
 GlossySpecular::GlossySpecular(void)
-    : 	ks(0.0),
-        cs(1.0),
-        sampler(NULL)
+    : BRDF(),
+      ks(0.0),
+      cs(1.0)
 {}
 
 // ------ destructor

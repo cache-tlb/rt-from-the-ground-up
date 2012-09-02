@@ -52,10 +52,10 @@ Instance::clone(void) const {
 
 // ------ destructor
 Instance::~Instance(void) {
-    if (object_ptr) {
+    /*if (object_ptr) {
         delete object_ptr;
         object_ptr = NULL;
-    }
+    }*/
 }
 
 // ------ assignment operator
