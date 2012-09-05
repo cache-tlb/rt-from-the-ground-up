@@ -25,7 +25,7 @@ SV_Matte::SV_Matte(const SV_Matte &m)
 }
 
 Material*
-SV_Matte::clone() const
+SV_Matte::clone(void) const
 {
     return (new SV_Matte(*this));
 }

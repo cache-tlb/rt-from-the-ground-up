@@ -1,4 +1,7 @@
 #include "imageio.h"
+#include "cv.h"
+#include "highgui.h"
+#include "cxcore.h"
 
 ImageIO::ImageIO() {}
 

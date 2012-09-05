@@ -160,6 +160,7 @@ AxisAlignedBox::hit(const Ray &ray, double &tmin, ShadeRec &sr) const
                     sr.normal = Normal(0,0,-1);
             }
         }
+        sr.local_hit_point = ray.o + tmin * ray.d;
         return true;
     }
     else{

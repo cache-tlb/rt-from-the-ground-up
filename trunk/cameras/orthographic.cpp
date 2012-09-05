@@ -40,8 +40,9 @@ Orthographic::render_scene(const Scene &w)
     int 		hres 	= w.vp.hres;
     int 		vres 	= w.vp.vres;
     float		s		= w.vp.s;
-    float		zw		= 100.0;				// hardwired in
 
+    /* only z-axis aligned orthographic projection*/
+    float		zw		= 100.0;				// hardwired in
     ray.d = Vector3D(0, 0, -1);
 
     for (int r = 0; r < vres; r++){			// up

@@ -3,9 +3,6 @@
 
 #include "rgbcolor.h"
 #include <vector>
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
 
 class ImageIO
 {

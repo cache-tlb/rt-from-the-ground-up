@@ -35,87 +35,91 @@
 
 //cameras
 #include "orthographic.h"
+#include "fisheye.h"
 #include "pinhole.h"
 
 // texture
 #include "imagetexture.h"
+#include "checker3d.h"
+#include "tinstance.h"
+#include "fbmtexture.h"
+#include "wrappedfbmtexture.h"
+#include "rampfbmtexture.h"
 
 //sampler
 #include "multijittered.h"
 
 //mapping
 #include "sphericalmap.h"
+#include "rectangularmap.h"
+#include "cylindricalmap.h"
+#include "lightprobe.h"
+
+//noise
+#include "cubicnoise.h"
 
 #include <iostream>
-#include <cv.h>
-#include <highgui.h>
-#include <cxcore.h>
-using namespace std;
+typedef Fisheye FishEye;
 
 void Scene::build(void)
 {
     int num_samples = 16;
 
-        vp.set_hres(700);
-        vp.set_vres(700);
-        vp.set_samples(num_samples);
+    vp.set_hres(600);
+    vp.set_vres(600);
+    vp.set_samples(num_samples);
 
-        background_color = black;
+    background_color = black;
+    tracer_ptr = new RayCast(this);
 
-        tracer_ptr = new RayCast(this);
-
-        Pinhole* camera_ptr = new Pinhole;
-        camera_ptr->set_eye(0, 0, 65);
-        camera_ptr->set_lookat(0.0);
-        camera_ptr->set_view_distance(21000.0);
-        camera_ptr->compute_uvw();
-        set_camera(camera_ptr);
-
-
-        Directional* light_ptr = new Directional;
-        light_ptr->set_direction(-0.25, 0.4, 1);
-        light_ptr->scale_radiance(2.5);
-        add_light(light_ptr);
+    Pinhole* pinhole_ptr = new Pinhole;
+    pinhole_ptr->set_eye(0, 0, 100);
+    pinhole_ptr->set_lookat(0.0);
+    pinhole_ptr->set_view_distance(5800.0);
+    pinhole_ptr->compute_uvw();
+    set_camera(pinhole_ptr);
 
 
-        // image:
-
-        Image* image_ptr = new Image;
-    //	image_ptr->read_ppm_file("EarthLowRes.ppm");
-        image_ptr->read_image("F:\\Code\\temp\\rendering-code\\wxraytracer\\TextureFiles\\jpg\\EarthHighRes.jpg");
-
-
-        // mapping:
-
-        SphericalMap* map_ptr = new SphericalMap;
+    PointLight* light_ptr = new PointLight;
+    light_ptr->set_location(20, 20, 40);
+    light_ptr->scale_radiance(2.5);
+    add_light(light_ptr);
 
 
-        // image based texture:
+    // noise:
 
-        ImageTexture* texture_ptr = new ImageTexture;
-        texture_ptr->set_image(image_ptr);
-        texture_ptr->set_mapping(map_ptr);
+    CubicNoise* noise_ptr = new CubicNoise;
+    noise_ptr->set_num_octaves(6);
+    noise_ptr->set_gain(0.5);
+    noise_ptr->set_lacunarity(2.0);
+
+    // ramp image:
+
+    Image* image_ptr = new Image;
+    image_ptr->read_image("F:\\Code\\temp\\rendering-code\\wxraytracer\\TextureFiles\\jpg\\BlueMarbleRamp.jpg");
+
+    // marble texture:
+
+    RampFBmTexture* marble_ptr = new RampFBmTexture(image_ptr);
+    marble_ptr->set_noise(noise_ptr);
+    //marble_ptr->set_perturbation(4.0);		// for Figure 31.33(a)
+    //marble_ptr->set_perturbation(8.0);		// for Figure 31.33(b)
+    marble_ptr->set_perturbation(30.0);		// for Figure 31.33(c)
+
+    // material:
+
+    SV_Matte* sv_matte_ptr = new SV_Matte;
+    sv_matte_ptr->set_ka(0.25);
+    sv_matte_ptr->set_kd(0.9);
+    sv_matte_ptr->set_cd(marble_ptr);
 
 
-        // textured material:
-
-        SV_Matte* sv_matte_ptr = new SV_Matte;
-        sv_matte_ptr->set_ka(0.2);
-        sv_matte_ptr->set_kd(0.8);
-        sv_matte_ptr->set_cd(texture_ptr);
+    Instance* sphere_ptr1 = new Instance(new Sphere(Point3D(0.0), 5.0));
+    sphere_ptr1->set_material(sv_matte_ptr);
+    sphere_ptr1->rotate_y(180);
+    add_object(sphere_ptr1);
 
 
-        // generic sphere:
-
-        Sphere*	sphere_ptr = new Sphere;
-        sphere_ptr->set_material(sv_matte_ptr);
-
-
-        // rotated sphere
-
-        Instance* earth_ptr = new Instance(sphere_ptr);
-        earth_ptr->rotate_y(60);
-        add_object(earth_ptr);
 
 
     render_res = new RGBColor[vp.hres*vp.vres];
@@ -123,8 +127,8 @@ void Scene::build(void)
 
 void MainWindow::test()
 {
-    Image* image_ptr = new Image;
-        image_ptr->read_image("F:\\Code\\temp\\rendering-code\\wxraytracer\\TextureFiles\\jpg\\Sarah.jpg");
+    /*Image* image_ptr = new Image;
+        image_ptr->read_image("F:\\Code\\temp\\rendering-code\\wxraytracer\\TextureFiles\\jpg\\Lightlace.ppm");
 
         int row = image_ptr->get_vres(), col = image_ptr->get_hres();
 
@@ -137,7 +141,7 @@ void MainWindow::test()
             }
         }
         cvShowImage("test",img);
-        cvWaitKey();
+        cvWaitKey();*/
 }
 
 void MainWindow::render()

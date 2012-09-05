@@ -19,7 +19,8 @@ INCLUDEPATH += ./utilities \
     ./shapes \
     ./tracers \
     ./textures \
-    ./mappings
+    ./mappings \
+    ./noises
 
 INCLUDEPATH +=  D:/Library/OpenCV/build/include \
                 D:/Library/OpenCV/build/include/opencv
@@ -89,7 +90,22 @@ SOURCES += main.cpp\
     textures/imagetexture.cpp \
     BRDFs/sv_lambertian.cpp \
     materials/sv_matte.cpp \
-    utilities/IO/imageio.cpp
+    utilities/IO/imageio.cpp \
+    mappings/rectangularmap.cpp \
+    mappings/cylindricalmap.cpp \
+    mappings/lightprobe.cpp \
+    shapes/triangles/smoothuvmeshtriangle.cpp \
+    shapes/triangles/flatuvmeshtriangle.cpp \
+    textures/spherechecker.cpp \
+    textures/planechecker.cpp \
+    textures/tinstance.cpp \
+    textures/checker3d.cpp \
+    noises/latticenoise.cpp \
+    noises/linearnoise.cpp \
+    noises/cubicnoise.cpp \
+    textures/fbmtexture.cpp \
+    textures/wrappedfbmtexture.cpp \
+    textures/rampfbmtexture.cpp
 
 HEADERS  += mainwindow.h \
     utilities/matrix.h \
@@ -154,6 +170,21 @@ HEADERS  += mainwindow.h \
     textures/imagetexture.h \
     BRDFs/sv_lambertian.h \
     materials/sv_matte.h \
-    utilities/IO/imageio.h
+    utilities/IO/imageio.h \
+    mappings/rectangularmap.h \
+    mappings/cylindricalmap.h \
+    mappings/lightprobe.h \
+    shapes/triangles/smoothuvmeshtriangle.h \
+    shapes/triangles/flatuvmeshtriangle.h \
+    textures/spherechecker.h \
+    textures/planechecker.h \
+    textures/tinstance.h \
+    textures/checker3d.h \
+    noises/latticenoise.h \
+    noises/linearnoise.h \
+    noises/cubicnoise.h \
+    textures/fbmtexture.h \
+    textures/wrappedfbmtexture.h \
+    textures/rampfbmtexture.h
 
 FORMS    += mainwindow.ui

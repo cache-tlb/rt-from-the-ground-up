@@ -6,6 +6,7 @@
 
 #include "constants.h"
 #include "compound.h"
+#include "material.h"
 
 
 // ------  default constructor
@@ -21,7 +22,8 @@ Compound::clone(void) const {
 
 // ------ copy constructor
 Compound::Compound (const Compound& c)
-    : Shape(c) {
+    : Shape(c)
+{
     copy_objects(c.objects);
 }
 
@@ -55,8 +57,10 @@ void
 Compound::set_material(Material* material_ptr) {
     int num_objects = objects.size();
 
+    /* L.B. changed the set_material function */
+    Shape::set_material(material_ptr);
     for (int j = 0; j < num_objects; j++)
-        objects[j]->set_material(material_ptr);
+        objects[j]->set_material(material_ptr->clone());
 }
 
 // ------ delete_objects
