@@ -77,5 +77,9 @@ ViewPlane::~ViewPlane(void)
 void
 ViewPlane::set_sampler(Sampler *sp)
 {
+    if(sampler_ptr){
+        delete sampler_ptr;
+        sampler_ptr = NULL;
+    }
     sampler_ptr = sp;
 }

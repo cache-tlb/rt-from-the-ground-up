@@ -71,6 +71,13 @@ public:
     void
     store_material(Material* material, const int index);
 
+    /* newly addded by Kevin Suffern in chapter 29*/
+    void
+    read_flat_uv_triangles(char* file_name);
+
+    void
+    read_smooth_uv_triangles(char* file_name);
+
 private:
     std::vector<Shape*>	cells;			// grid of cells
     int					nx, ny, nz;    	// number of cells in the x, y, and z directions
@@ -89,6 +96,10 @@ private:
 
     void
     compute_mesh_normals(void);
+
+    /* newly addded by Kevin Suffern in chapter 29*/
+    void
+    read_uv_ply_file(char* file_name, const int triangle_type);
 };
 
 

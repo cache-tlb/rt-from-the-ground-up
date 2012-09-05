@@ -32,7 +32,6 @@ SphericalMap::clone(void) const {
 }
 
 // ------ get_texel_coordinates
-
 // Given a hit point on a generic sphere, and the image resolution, this function
 // returns the texel coordinates in the image
 void

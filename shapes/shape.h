@@ -38,7 +38,7 @@ public:
     virtual void 							// This needs to be virtual so that it can be overridden in Compound
     set_material(Material* mPtr); 			// It therefore shouldn't be inlined
 
-    Material*
+    virtual Material*
     get_material(void) const;
 
     // The following three functions are only required for Chapter 3

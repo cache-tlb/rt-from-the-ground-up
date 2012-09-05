@@ -52,10 +52,10 @@ Instance::clone(void) const {
 
 // ------ destructor
 Instance::~Instance(void) {
-    /*if (object_ptr) {
+    if (object_ptr) {
         delete object_ptr;
         object_ptr = NULL;
-    }*/
+    }
 }
 
 // ------ assignment operator
@@ -208,14 +208,14 @@ Instance::get_bounding_box(void) {
 // ------ get_material
 Material*
 Instance::get_material(void) const {
-    return (material_ptr);
+    return object_ptr->get_material();
 }
 
 // ------ set_material
 // Here, material_ptr is Shape::material_ptr
 void
 Instance::set_material(Material* m_ptr) {
-    material_ptr = m_ptr;
+    object_ptr->set_material(m_ptr);
 }
 
 // ------ hit
@@ -229,9 +229,9 @@ Instance::hit(const Ray& ray, double& t, ShadeRec& sr) const {
         sr.normal = inv_matrix * sr.normal;
         sr.normal.normalize();
 
-        if (object_ptr->get_material()){
-            material_ptr = object_ptr->get_material();
-        }
+        /*if (object_ptr->get_material()){
+            sr.material_ptr = object_ptr->get_material();
+        }*/
 
         if (!transform_the_texture){
             sr.local_hit_point = ray.o + t * ray.d;

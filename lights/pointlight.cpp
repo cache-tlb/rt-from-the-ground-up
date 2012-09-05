@@ -15,7 +15,7 @@ PointLight::PointLight(const PointLight& pr)
 {}
 
 Light*
-PointLight::clone()const
+PointLight::clone(void)const
 {
     return (new PointLight(*this));
 }
