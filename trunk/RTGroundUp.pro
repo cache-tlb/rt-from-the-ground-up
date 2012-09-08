@@ -20,7 +20,8 @@ INCLUDEPATH += ./utilities \
     ./tracers \
     ./textures \
     ./mappings \
-    ./noises
+    ./noises \
+    ./BTDFs
 
 INCLUDEPATH +=  D:/Library/OpenCV/build/include \
                 D:/Library/OpenCV/build/include/opencv
@@ -105,7 +106,13 @@ SOURCES += main.cpp\
     noises/cubicnoise.cpp \
     textures/fbmtexture.cpp \
     textures/wrappedfbmtexture.cpp \
-    textures/rampfbmtexture.cpp
+    textures/rampfbmtexture.cpp \
+    BTDFs/btdf.cpp \
+    BTDFs/perfecttransmitter.cpp \
+    materials/transparent.cpp \
+    BRDFs/fresnelreflector.cpp \
+    BTDFs/fresneltransmitter.cpp \
+    materials/dielectric.cpp
 
 HEADERS  += mainwindow.h \
     utilities/matrix.h \
@@ -185,6 +192,12 @@ HEADERS  += mainwindow.h \
     noises/cubicnoise.h \
     textures/fbmtexture.h \
     textures/wrappedfbmtexture.h \
-    textures/rampfbmtexture.h
+    textures/rampfbmtexture.h \
+    BTDFs/btdf.h \
+    BTDFs/perfecttransmitter.h \
+    materials/transparent.h \
+    BRDFs/fresnelreflector.h \
+    BTDFs/fresneltransmitter.h \
+    materials/dielectric.h
 
 FORMS    += mainwindow.ui

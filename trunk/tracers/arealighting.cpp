@@ -43,5 +43,3 @@ AreaLighting::trace_ray(const Ray ray, const int depth) const {
         }
     }
 }
-
-

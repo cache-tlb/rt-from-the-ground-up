@@ -43,6 +43,7 @@ Compound::operator= (const Compound& rhs) {
 // ------ destructor
 Compound::~Compound(void) {
     delete_objects();
+    material_ptr = NULL;
 }
 
 // ------ add_object
@@ -58,7 +59,7 @@ Compound::set_material(Material* material_ptr) {
     int num_objects = objects.size();
 
     /* L.B. changed the set_material function */
-    Shape::set_material(material_ptr);
+    //Shape::set_material(material_ptr);
     for (int j = 0; j < num_objects; j++)
         objects[j]->set_material(material_ptr->clone());
 }
