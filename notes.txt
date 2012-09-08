@@ -8,6 +8,8 @@ texture mapping (not very well)
 
 noise texture
 
+fixed wrong normal in axisaligned box, normal should point outside
+
 -------------------------------
 problems:
 
@@ -31,7 +33,14 @@ problem in compound::set_material
 
 pinhole camera's sampling
 
+should object pointers in class Compound be shared
+
 -------------------------------
 TODO:
 turbulence noise has not been implemented yet
 
+transparent material is the brdf  -> ok
+
+tir and sample_f function in transmitted btdf
+
+whitted trace_ray 

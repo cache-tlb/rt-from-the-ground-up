@@ -143,21 +143,21 @@ AxisAlignedBox::hit(const Ray &ray, double &tmin, ShadeRec &sr) const
             tmin = t1;
             if(t1 == tx_max){
                 if(dx < 0)
-                    sr.normal = Normal(1,0,0);
-                else
                     sr.normal = Normal(-1,0,0);
+                else
+                    sr.normal = Normal(1,0,0);
             }
             else if(t1 == ty_max){
                 if(dy < 0)
-                    sr.normal = Normal(0,1,0);
-                else
                     sr.normal = Normal(0,-1,0);
+                else
+                    sr.normal = Normal(0,1,0);
             }
             else{
                 if(dz < 0)
-                    sr.normal = Normal(0,0,1);
-                else
                     sr.normal = Normal(0,0,-1);
+                else
+                    sr.normal = Normal(0,0,1);
             }
         }
         sr.local_hit_point = ray.o + tmin * ray.d;
