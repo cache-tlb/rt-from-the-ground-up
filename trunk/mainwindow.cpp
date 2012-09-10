@@ -8,6 +8,7 @@
 #include "raycast.h"
 #include "arealighting.h"
 #include "whitted.h"
+#include "pathtrace.h"
 
 //shapes
 #include "primitives/sphere.h"
@@ -34,11 +35,13 @@
 #include "directional.h"
 #include "arealight.h"
 #include "pointlight.h"
+#include "ambientoccluder.h"
 
 //cameras
 #include "orthographic.h"
 #include "fisheye.h"
 #include "pinhole.h"
+#include "thinlens.h"
 
 // texture
 #include "imagetexture.h"
@@ -66,107 +69,103 @@ typedef Fisheye FishEye;
 
 void Scene::build(void)
 {
-    int num_samples = 25;
+    int num_samples = 64;
 
-    vp.set_hres(600);
-    vp.set_vres(600);
+    vp.set_hres(400);
+    vp.set_vres(400);
     vp.set_samples(num_samples);
-    vp.set_max_depth(6);
 
-    background_color = RGBColor(0.0, 0.13, 0.1);
+    tracer_ptr = new RayCast(this);
 
-    tracer_ptr = new Whitted(this);
+    MultiJittered* sampler_ptr = new MultiJittered(num_samples);
 
-    Ambient* ambient_ptr = new Ambient;
-    ambient_ptr->set_color(0.45, 0.5, 0.45);
-    ambient_ptr->scale_radiance(0.25);
-    set_ambient_light(ambient_ptr);
-
+    AmbientOccluder* acl_ptr = new AmbientOccluder;
+//  acl_ptr->set_min_amount(1.0);    	// for Figure 17.12(a)
+    acl_ptr->set_min_amount(0.25);		// for Figure 17.12(b)
+//	acl_ptr->set_min_amount(0.0);		// for Figure 17.12(c)
+    acl_ptr->set_sampler(sampler_ptr);
+    set_ambient_light(acl_ptr);
 
     Pinhole* pinhole_ptr = new Pinhole;
-    pinhole_ptr->set_eye(0, 0, 10);
-    pinhole_ptr->set_lookat(0, 0, 0);
-    pinhole_ptr->set_view_distance(2800.0);
+
+    // for regular view
+
+    pinhole_ptr->set_eye(20, 10, 40);
+    pinhole_ptr->set_lookat(-0.025, 0.11, 0.0);
+    pinhole_ptr->set_view_distance(70000);
     pinhole_ptr->compute_uvw();
     set_camera(pinhole_ptr);
 
 
     Directional* light_ptr1 = new Directional;
-    light_ptr1->set_direction(10, 10, 10);
-    light_ptr1->scale_radiance(7.0);
-    light_ptr1->set_shadows(false);
+    light_ptr1->set_direction(20, 40, 20);
+    light_ptr1->scale_radiance(2.5);
+    light_ptr1->set_shadows(true);
     add_light(light_ptr1);
 
-    Directional* light_ptr2 = new Directional;
-    light_ptr2->set_direction(-1, 0, 0);
-    light_ptr2->scale_radiance(7.0);
-    light_ptr2->set_shadows(false);
-    add_light(light_ptr2);
+
+    float ka = 0.5;		// used for all materials
+
+    Matte* matte_ptr1 = new Matte;
+    matte_ptr1->set_ka(ka);
+    matte_ptr1->set_kd(0.5);
+    matte_ptr1->set_cd(0.5, 0.75, 1);   // pale blue for bunny
 
 
-    // transparent unit sphere at the origin
+    char* file_name = "F:\\Code\\temp\\rendering-code\\wxraytracer\\PLYFiles\\Stanford Bunny\\BunnyMedium.ply"; 	// 10000 triangles - needs the normals reversed
 
-    Dielectric* dielectric_ptr = new Dielectric;
-    dielectric_ptr->set_eta_in(1.5);		// glass
-    dielectric_ptr->set_eta_out(1.0);		// air
-    dielectric_ptr->set_cf_in(white);
-    dielectric_ptr->set_cf_out(white);
+    Grid* bunny_ptr = new Grid;
+//    bunny_ptr->reverse_mesh_normals();				// only required for the Bunny10K.ply file
+//	bunny_ptr->read_flat_triangles(file_name);		// read PLY file
+    bunny_ptr->read_smooth_triangles(file_name);	// read PLY file
+    bunny_ptr->set_material(matte_ptr1);
+    bunny_ptr->setup_cells();
 
-    Sphere* sphere_ptr1 = new Sphere;
-    sphere_ptr1->set_material(dielectric_ptr);
-
-
-    // red reflective sphere inside the transparent sphere
-
-    // the Reflective parameters below are for the reflective sphere in a glass sphere
-    // they are too dark for the diamond sphere because of the etas
-
-    Reflective*	reflective_ptr = new Reflective;
-    reflective_ptr->set_ka(0.1);
-    reflective_ptr->set_kd(0.7);
-    reflective_ptr->set_cd(red);
-    reflective_ptr->set_ks(0.3);
-    reflective_ptr->set_exp(200.0);
-    reflective_ptr->set_kr(0.5);
-    reflective_ptr->set_cr(white);
-
-    double radius = 0.1;
-    double distance = 0.8;   // from center of transparent sphere
-
-    Sphere* sphere_ptr2 = new Sphere(Point3D(0, 0, distance), radius);
-    sphere_ptr2->set_material(reflective_ptr);
-
-    // store the spheres in a compound object
-
-    Compound* spheres_ptr = new Compound;
-    spheres_ptr->add_object(sphere_ptr1);
-    spheres_ptr->add_object(sphere_ptr2);
-
-    // now store compound object in an instance so that we can rotate it
-
-    Instance* rotated_spheres_ptr = new Instance(spheres_ptr);
-//  rotated_spheres_ptr->rotate_y(0.0);		// for Figure 28.28(a)
-//	rotated_spheres_ptr->rotate_y(120.0);  	// for Figure 28.28(b)
-//	rotated_spheres_ptr->rotate_y(162.0);  	// for Figure 28.28(c)
-    rotated_spheres_ptr->rotate_y(164.0);  	// for Figure 28.28(d)
-    add_object(rotated_spheres_ptr);
+    Instance* rotated_bunny_ptr = new Instance(bunny_ptr);
+    rotated_bunny_ptr->set_material(matte_ptr1);
+    rotated_bunny_ptr->rotate_y(40);
+    add_object(rotated_bunny_ptr);
 
 
-    // ground plane
+    // rectangle parameters
 
-    Checker3D* checker3D_ptr = new Checker3D;
-    checker3D_ptr->set_size(50.0);
-    checker3D_ptr->set_color1(0.5);
-    checker3D_ptr->set_color2(1.0);
+    Point3D p0(-0.13, 0.033, -0.1);  	// common corner
+    float height = 0.25;  				// y direction
+    float width = 0.45;  				// x direction
+    float depth = 0.45;   				// z direction
 
-    SV_Matte* sv_matte_ptr = new SV_Matte;
-    sv_matte_ptr->set_ka(0.25);
-    sv_matte_ptr->set_kd(0.5);
-    sv_matte_ptr->set_cd(checker3D_ptr);
+    // horizontal rectangle
 
-    Plane* plane_ptr = new Plane(Point3D(0, -40.5, 0), Normal(0, 1, 0));
-    plane_ptr->set_material(sv_matte_ptr);
-    add_object(plane_ptr);
+    Matte* matte_ptr2 = new Matte;
+    matte_ptr2->set_ka(ka);
+    matte_ptr2->set_kd(0.5);
+    matte_ptr2->set_cd(white);
+
+    Rectangle* rectangle_ptr1 = new Rectangle(p0, Vector3D(0, 0,depth), Vector3D(width, 0, 0));
+    rectangle_ptr1->set_material(matte_ptr2);
+    add_object(rectangle_ptr1);
+
+    // rectangle perpendicular to x axis
+
+    Matte* matte_ptr3 = new Matte;
+    matte_ptr3->set_ka(ka);
+    matte_ptr3->set_kd(0.75);
+    matte_ptr3->set_cd(0.5, 1, 0.75);
+
+    Rectangle* rectangle_ptr2 = new Rectangle(p0, Vector3D(0, height, 0), Vector3D(0, 0, depth));
+    rectangle_ptr2->set_material(matte_ptr3);
+    add_object(rectangle_ptr2);
+
+    // rectangle perpendicular to w axis
+
+    Matte* matte_ptr4 = new Matte;
+    matte_ptr4->set_ka(ka);
+    matte_ptr4->set_kd(0.5);
+    matte_ptr4->set_cd(1, 1, 0.5);
+
+    Rectangle* rectangle_ptr3 = new Rectangle(p0, Vector3D(width, 0, 0), Vector3D(0, height, 0));
+    rectangle_ptr3->set_material(matte_ptr4);
+    add_object(rectangle_ptr3);
 
 
     render_res = new RGBColor[vp.hres*vp.vres];

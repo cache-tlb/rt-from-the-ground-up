@@ -38,6 +38,16 @@ public:
     virtual RGBColor
     shade(ShadeRec& s);
 
+    /* newly added for path tracing */
+    virtual RGBColor
+    path_shade(ShadeRec &sr);
+
+    virtual RGBColor
+    global_shade(ShadeRec &sr);
+
+    void
+    set_sampler(Sampler *s_ptr);
+
 private:
     PerfectSpecular* reflective_brdf;
 };

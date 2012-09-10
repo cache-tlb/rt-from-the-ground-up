@@ -10,6 +10,10 @@ noise texture
 
 fixed wrong normal in axisaligned box, normal should point outside
 
+9.10: added function get_bounding_box in class Axisaligned_box
+      fixed some bugs in Thinlens
+      added function shadow_hit in class Instance
+
 -------------------------------
 problems:
 
@@ -25,8 +29,6 @@ noise in area light
 
 sampler pointer is not initially set in ViewPlane
 
-should add an io manager in class Grid
-
 problem in compound::set_material
 
 !! a fundamental problem: should Shape release material_ptr in destruction?
@@ -35,12 +37,16 @@ pinhole camera's sampling
 
 should object pointers in class Compound be shared
 
+class Grid's copy constructor has not been implemented.
+
 -------------------------------
 TODO:
 turbulence noise has not been implemented yet
 
 transparent material is the brdf  -> ok
 
-tir and sample_f function in transmitted btdf
+tir and sample_f function in transmitted btdf -> ok
 
 whitted trace_ray 
+
+geometry model IO manager in class Grid

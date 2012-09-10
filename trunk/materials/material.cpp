@@ -38,3 +38,15 @@ RGBColor
 Material::area_light_shade(ShadeRec &sr) {
     return shade(sr);
 }
+
+// ------ path_shade
+RGBColor
+Material::path_shade(ShadeRec& sr) {
+    return shade(sr);
+}
+
+// ------ golbal_shade
+RGBColor
+Material::global_shade(ShadeRec &sr) {
+    return shade(sr);
+}

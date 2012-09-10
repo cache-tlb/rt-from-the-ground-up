@@ -42,6 +42,15 @@ public:
     virtual RGBColor
     area_light_shade(ShadeRec &sr);
 
+    virtual RGBColor
+    path_shade(ShadeRec &sr);
+
+    virtual RGBColor
+    global_shade(ShadeRec &sr);
+
+    void
+    set_sampler(Sampler *s_ptr);
+
 private:
     Lambertian*		ambient_brdf;
     Lambertian*		diffuse_brdf;

@@ -82,6 +82,9 @@ public:
     virtual bool
     shadow_hit(const Ray& ray, float& tmin) const;
 
+    void
+    set_shadows(bool b);
+
 protected:
     mutable Material*   material_ptr;   	// mutable allows the const functions Compound::hit, Instance::hit, and RegularGrid::hit to assign to material_ptr
     //RGBColor   			color;				// only used for Bare Bones ray tracing
@@ -112,5 +115,10 @@ Shape::get_color(void) {
     return (color);
 }
 */
+
+inline void
+Shape::set_shadows(bool b) {
+    shadows = b;
+}
 
 #endif // SHAPE_H

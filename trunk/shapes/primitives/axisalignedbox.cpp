@@ -44,6 +44,11 @@ AxisAlignedBox::operator= (const AxisAlignedBox& rhs)
 
 AxisAlignedBox::~AxisAlignedBox() {}
 
+BBox
+AxisAlignedBox::get_bounding_box(void) {
+    return BBox(x0,x1,y0,y1,z0,z1);
+}
+
 bool
 AxisAlignedBox::hit(const Ray &ray, double &tmin, ShadeRec &sr) const
 {

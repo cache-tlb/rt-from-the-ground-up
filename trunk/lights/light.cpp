@@ -1,5 +1,6 @@
 #include "light.h"
 #include "constants.h"
+#include "shaderec.h"
 
 // ------ default constructor
 Light::Light(void)

@@ -107,8 +107,8 @@ ThinLens::render_scene(const Scene &w)
 
     vp.s /= zoom;
 
-    for(int r = 0; r < vp.hres; r++){
-        for(int c = 0; c < vp.vres; c++){
+    for(int r = 0; r < vp.vres; r++){
+        for(int c = 0; c < vp.hres; c++){
             L = black;
 
             for(int n = 0; n < vp.num_samples; n++){
