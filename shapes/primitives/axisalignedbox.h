@@ -24,6 +24,9 @@ public:
     virtual
     ~AxisAlignedBox(void);
 
+    virtual BBox
+    get_bounding_box(void);
+
     virtual bool
     hit(const Ray& ray, double& tmin, ShadeRec& sr) const;
 

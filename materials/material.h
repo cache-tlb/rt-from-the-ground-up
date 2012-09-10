@@ -25,6 +25,12 @@ public:
     virtual RGBColor
     area_light_shade(ShadeRec& sr);
 
+    virtual RGBColor
+    path_shade(ShadeRec& sr);
+
+    virtual RGBColor
+    global_shade(ShadeRec& sr);
+
 protected:
     Material&
     operator= (const Material& rhs);

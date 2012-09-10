@@ -10,6 +10,7 @@
 // This file contains the declaration of the class Sphere
 
 #include "shape.h"
+#include "sampler.h"
 
 // ------ class Sphere
 
@@ -46,9 +47,14 @@ public:
     virtual bool
     shadow_hit(const Ray& ray, float& tmin) const;
 
+    // added by L.B.
+    void
+    set_sampler(Sampler *s_ptr);
+
 private:
     Point3D 	center;   			// center coordinates as a point
     double 		radius;				// the radius
+    Sampler*    sampler_ptr;
 
     static const double kEpsilon;   // for shadows and secondary rays
 };

@@ -49,6 +49,10 @@ public:
     virtual bool
     hit(const Ray& ray, double& tmin, ShadeRec& sr) const;
 
+    /* shadow_hit added by L.B. */
+    virtual bool
+    shadow_hit(const Ray& ray, float& tmin) const;
+
     // affine tranformation functions
 
     void

@@ -36,6 +36,12 @@ public:
     virtual RGBColor
     area_light_shade(ShadeRec& sr);
 
+    virtual RGBColor
+    path_shade(ShadeRec &sr);
+
+    virtual RGBColor
+    global_shade(ShadeRec &sr);
+
 private:
     float		ls;		// radiance scaling factor
     RGBColor 	ce;		// color

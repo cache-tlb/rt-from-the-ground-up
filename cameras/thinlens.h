@@ -32,6 +32,15 @@ public:
     virtual void
     render_scene(const Scene& w);
 
+    void
+    set_view_distance(const float f);
+
+    void
+    set_lens_radius(const float f);
+
+    void
+    set_focal_distance(const float focal);
+
 private:
     float lens_radius;
     float d;
@@ -39,5 +48,20 @@ private:
     float zoom;
     Sampler* sampler_ptr;
 };
+
+inline void
+ThinLens::set_focal_distance(const float focal) {
+    f = focal;
+}
+
+inline void
+ThinLens::set_lens_radius(const float f) {
+    lens_radius = f;
+}
+
+inline void
+ThinLens::set_view_distance(const float f) {
+    d = f;
+}
 
 #endif // THINLENS_H

@@ -243,6 +243,19 @@ Instance::hit(const Ray& ray, double& t, ShadeRec& sr) const {
     return (false);
 }
 
+// ------ shadow_hit by L.B.
+bool
+Instance::shadow_hit(const Ray &ray, float &tmin) const {
+    Ray inv_ray(ray);
+    inv_ray.o = inv_matrix * inv_ray.o;
+    inv_ray.d = inv_matrix * inv_ray.d;
+
+    if (object_ptr->shadow_hit(inv_ray, tmin)) {
+        return (true);
+    }
+
+    return (false);
+}
 
 // ------ scale
 void

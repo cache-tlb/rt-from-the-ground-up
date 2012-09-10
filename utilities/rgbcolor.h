@@ -3,7 +3,7 @@
 
 // This file contains the declaration of the class RGBColor
 
-//------------------------------------------------------------ class RGBColor
+// ------ class RGBColor
 
 class RGBColor {
 

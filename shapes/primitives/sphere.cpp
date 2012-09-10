@@ -9,14 +9,16 @@ const double Sphere::kEpsilon = 0.001;
 Sphere::Sphere(void)
     : 	Shape(),
         center(0.0),
-        radius(1.0)
+        radius(1.0),
+      sampler_ptr(NULL)
 {}
 
 // ------ constructor
 Sphere::Sphere(Point3D c, double r)
     : 	Shape(),
         center(c),
-        radius(r)
+        radius(r),
+      sampler_ptr(NULL)
 {}
 
 // ------ clone
@@ -30,7 +32,14 @@ Sphere::Sphere (const Sphere& sphere)
     : 	Shape(sphere),
         center(sphere.center),
         radius(sphere.radius)
-{}
+{
+    if(sphere.sampler_ptr){
+        sampler_ptr = sphere.sampler_ptr->clone();
+    }
+    else{
+        sampler_ptr = NULL;
+    }
+}
 
 // ------ assignment operator
 Sphere&
@@ -45,11 +54,26 @@ Sphere::operator= (const Sphere& rhs)
     center 	= rhs.center;
     radius	= rhs.radius;
 
+    if(sampler_ptr){
+        delete sampler_ptr;
+        sampler_ptr = NULL;
+    }
+
+    if(rhs.sampler_ptr){
+        sampler_ptr = rhs.sampler_ptr->clone();
+    }
+
     return (*this);
 }
 
 // ------ destructor
-Sphere::~Sphere(void) {}
+Sphere::~Sphere(void)
+{
+    if(sampler_ptr){
+        delete sampler_ptr;
+        sampler_ptr = NULL;
+    }
+}
 
 BBox
 Sphere::get_bounding_box() {
@@ -127,4 +151,14 @@ Sphere::shadow_hit(const Ray& ray, float& tmin) const {
     }
 
     return (false);
+}
+
+void
+Sphere::set_sampler(Sampler *s_ptr) {
+    if(sampler_ptr){
+        delete sampler_ptr;
+        sampler_ptr = NULL;
+    }
+    sampler_ptr = s_ptr;
+    sampler_ptr->map_samples_to_sphere();
 }
