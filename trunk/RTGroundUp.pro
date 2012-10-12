@@ -117,7 +117,9 @@ SOURCES += main.cpp\
     tracers/globaltrace.cpp \
     shapes/primitives/disk.cpp \
     shapes/compounded/solidcylinder.cpp \
-    lights/ambientoccluder.cpp
+    lights/ambientoccluder.cpp \
+    shapes/part/convexpartsphere.cpp \
+    shapes/part/convexpartcylinder.cpp
 
 HEADERS  += mainwindow.h \
     utilities/matrix.h \
@@ -208,6 +210,8 @@ HEADERS  += mainwindow.h \
     tracers/globaltrace.h \
     shapes/primitives/disk.h \
     shapes/compounded/solidcylinder.h \
-    lights/ambientoccluder.h
+    lights/ambientoccluder.h \
+    shapes/part/convexpartsphere.h \
+    shapes/part/convexpartcylinder.h
 
 FORMS    += mainwindow.ui

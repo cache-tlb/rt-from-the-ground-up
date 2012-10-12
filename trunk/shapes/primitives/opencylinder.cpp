@@ -185,4 +185,8 @@ OpenCylinder::shadow_hit(const Ray &ray, float &tmin) const {
     return false;
 }
 
-
+BBox
+OpenCylinder::get_bounding_box() {
+    Point3D p1(-radius, y0, -radius), p2(radius, y1, radius);
+    return BBox(p1,p2);
+}

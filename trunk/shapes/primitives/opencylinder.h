@@ -34,6 +34,10 @@ public:
     virtual bool
     shadow_hit(const Ray &ray, float &tmin) const;
 
+    /* get_bounding_box by L.B. */
+    virtual BBox
+    get_bounding_box();
+
 protected:
     double		y0;				// bottom y value
     double		y1;				// top y value
