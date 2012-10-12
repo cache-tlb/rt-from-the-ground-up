@@ -14,7 +14,7 @@ Disk::Disk(void)
 Disk::Disk(const Point3D& point, const Normal& n, const float radius)
     : Shape(),
       center(point),
-      normal(normal),
+      normal(n),
       r_squared(radius*radius)
 {
         normal.normalize();

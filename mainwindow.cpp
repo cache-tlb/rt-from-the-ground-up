@@ -9,6 +9,7 @@
 #include "arealighting.h"
 #include "whitted.h"
 #include "pathtrace.h"
+#include "globaltrace.h"
 
 //shapes
 #include "primitives/sphere.h"
@@ -19,6 +20,8 @@
 #include "triangles/triangle.h"
 #include "compounded/grid.h"
 #include "instance.h"
+#include "compounded/solidcylinder.h"
+#include "part/convexpartcylinder.h"
 
 //materials
 #include "matte.h"
@@ -69,104 +72,231 @@ typedef Fisheye FishEye;
 
 void Scene::build(void)
 {
-    int num_samples = 64;
+    int num_samples = 10000;
 
-    vp.set_hres(400);
-    vp.set_vres(400);
+    vp.set_hres(600);
+    vp.set_vres(600);
     vp.set_samples(num_samples);
+    vp.set_max_depth(10);
 
-    tracer_ptr = new RayCast(this);
+    background_color = black;
 
-    MultiJittered* sampler_ptr = new MultiJittered(num_samples);
+    tracer_ptr = new PathTrace(this);
 
-    AmbientOccluder* acl_ptr = new AmbientOccluder;
-//  acl_ptr->set_min_amount(1.0);    	// for Figure 17.12(a)
-    acl_ptr->set_min_amount(0.25);		// for Figure 17.12(b)
-//	acl_ptr->set_min_amount(0.0);		// for Figure 17.12(c)
-    acl_ptr->set_sampler(sampler_ptr);
-    set_ambient_light(acl_ptr);
+    Ambient* ambient_ptr = new Ambient;
+    ambient_ptr->scale_radiance(0.0);
+    set_ambient_light(ambient_ptr);
+
 
     Pinhole* pinhole_ptr = new Pinhole;
-
-    // for regular view
-
-    pinhole_ptr->set_eye(20, 10, 40);
-    pinhole_ptr->set_lookat(-0.025, 0.11, 0.0);
-    pinhole_ptr->set_view_distance(70000);
+    pinhole_ptr->set_eye(27.6, 27.4, -80.0);
+    pinhole_ptr->set_lookat(27.6, 27.4, 0.0);
+    pinhole_ptr->set_view_distance(800);
     pinhole_ptr->compute_uvw();
     set_camera(pinhole_ptr);
 
 
-    Directional* light_ptr1 = new Directional;
-    light_ptr1->set_direction(20, 40, 20);
-    light_ptr1->scale_radiance(2.5);
-    light_ptr1->set_shadows(true);
-    add_light(light_ptr1);
+    Point3D p0;
+    Vector3D a, b;
+    Normal normal;
+
+    // box dimensions
+
+    double width 	= 55.28;   	// x direction
+    double height 	= 54.88;  	// y direction
+    double depth 	= 55.92;	// z direction
 
 
-    float ka = 0.5;		// used for all materials
+    // the ceiling light - doesn't need samples
+
+    Emissive* emissive_ptr = new Emissive;
+    emissive_ptr->set_ce(1, 1, 1);
+    emissive_ptr->scale_radiance(120);
+
+    p0 = Point3D(21.3, height - 0.001, 22.7);
+    a = Vector3D(0.0, 0.0, 10.5);
+    b = Vector3D(13.0, 0.0, 0.0);
+    normal = Normal(0.0, -1.0, 0.0);
+    Rectangle* light_ptr = new Rectangle(p0, a, b, normal);
+    light_ptr->set_material(emissive_ptr);
+    add_object(light_ptr);
+
+
+    // left wall
 
     Matte* matte_ptr1 = new Matte;
-    matte_ptr1->set_ka(ka);
-    matte_ptr1->set_kd(0.5);
-    matte_ptr1->set_cd(0.5, 0.75, 1);   // pale blue for bunny
+    matte_ptr1->set_ka(0.0);
+    matte_ptr1->set_kd(0.6);
+    matte_ptr1->set_cd(0.57, 0.025, 0.025);	 // red
+    matte_ptr1->set_sampler(new MultiJittered(num_samples));
+
+    p0 = Point3D(width, 0.0, 0.0);
+    a = Vector3D(0.0, 0.0, depth);
+    b = Vector3D(0.0, height, 0.0);
+    normal = Normal(-1.0, 0.0, 0.0);
+    Rectangle* left_wall_ptr = new Rectangle(p0, a, b, normal);
+    left_wall_ptr->set_material(matte_ptr1);
+    add_object(left_wall_ptr);
 
 
-    char* file_name = "F:\\Code\\temp\\rendering-code\\wxraytracer\\PLYFiles\\Stanford Bunny\\BunnyMedium.ply"; 	// 10000 triangles - needs the normals reversed
-
-    Grid* bunny_ptr = new Grid;
-//    bunny_ptr->reverse_mesh_normals();				// only required for the Bunny10K.ply file
-//	bunny_ptr->read_flat_triangles(file_name);		// read PLY file
-    bunny_ptr->read_smooth_triangles(file_name);	// read PLY file
-    bunny_ptr->set_material(matte_ptr1);
-    bunny_ptr->setup_cells();
-
-    Instance* rotated_bunny_ptr = new Instance(bunny_ptr);
-    rotated_bunny_ptr->set_material(matte_ptr1);
-    rotated_bunny_ptr->rotate_y(40);
-    add_object(rotated_bunny_ptr);
-
-
-    // rectangle parameters
-
-    Point3D p0(-0.13, 0.033, -0.1);  	// common corner
-    float height = 0.25;  				// y direction
-    float width = 0.45;  				// x direction
-    float depth = 0.45;   				// z direction
-
-    // horizontal rectangle
+    // right wall
 
     Matte* matte_ptr2 = new Matte;
-    matte_ptr2->set_ka(ka);
-    matte_ptr2->set_kd(0.5);
-    matte_ptr2->set_cd(white);
+    matte_ptr2->set_ka(0.0);
+    matte_ptr2->set_kd(0.6);
+    matte_ptr2->set_cd(0.37, 0.59, 0.2);	 // green   from Photoshop
+    matte_ptr2->set_sampler(new MultiJittered(num_samples));
 
-    Rectangle* rectangle_ptr1 = new Rectangle(p0, Vector3D(0, 0,depth), Vector3D(width, 0, 0));
-    rectangle_ptr1->set_material(matte_ptr2);
-    add_object(rectangle_ptr1);
+    p0 = Point3D(0.0, 0.0, 0.0);
+    a = Vector3D(0.0, 0.0, depth);
+    b = Vector3D(0.0, height, 0.0);
+    normal = Normal(1.0, 0.0, 0.0);
+    Rectangle* right_wall_ptr = new Rectangle(p0, a, b, normal);
+    right_wall_ptr->set_material(matte_ptr2);
+    add_object(right_wall_ptr);
 
-    // rectangle perpendicular to x axis
+
+    // back wall
 
     Matte* matte_ptr3 = new Matte;
-    matte_ptr3->set_ka(ka);
-    matte_ptr3->set_kd(0.75);
-    matte_ptr3->set_cd(0.5, 1, 0.75);
+    matte_ptr3->set_ka(0.0);
+    matte_ptr3->set_kd(0.6);
+    matte_ptr3->set_cd(1.0, 0.93, 0.7);
+    matte_ptr3->set_sampler(new MultiJittered(num_samples));
 
-    Rectangle* rectangle_ptr2 = new Rectangle(p0, Vector3D(0, height, 0), Vector3D(0, 0, depth));
-    rectangle_ptr2->set_material(matte_ptr3);
-    add_object(rectangle_ptr2);
+    p0 = Point3D(0.0, 0.0, depth);
+    a = Vector3D(width, 0.0, 0.0);
+    b = Vector3D(0.0, height, 0.0);
+    normal = Normal(0.0, 0.0, -1.0);
+    Rectangle* back_wall_ptr = new Rectangle(p0, a, b, normal);
+    back_wall_ptr->set_material(matte_ptr3);
+    add_object(back_wall_ptr);
 
-    // rectangle perpendicular to w axis
 
-    Matte* matte_ptr4 = new Matte;
-    matte_ptr4->set_ka(ka);
-    matte_ptr4->set_kd(0.5);
-    matte_ptr4->set_cd(1, 1, 0.5);
+    // floor
 
-    Rectangle* rectangle_ptr3 = new Rectangle(p0, Vector3D(width, 0, 0), Vector3D(0, height, 0));
-    rectangle_ptr3->set_material(matte_ptr4);
-    add_object(rectangle_ptr3);
+    p0 = Point3D(0.0, 0.0, 0.0);
+    a = Vector3D(0.0, 0.0, depth);
+    b = Vector3D(width, 0.0, 0.0);
+    normal = Normal(0.0, 1.0, 0.0);
+    Rectangle* floor_ptr = new Rectangle(p0, a, b, normal);
+    floor_ptr->set_material(matte_ptr3->clone());
+    add_object(floor_ptr);
 
+
+    // ceiling
+
+    p0 = Point3D(0.0, height, 0.0);
+    a = Vector3D(0.0, 0.0, depth);
+    b = Vector3D(width, 0.0, 0.0);
+    normal = Normal(0.0, -1.0, 0.0);
+    Rectangle* ceiling_ptr = new Rectangle(p0, a, b, normal);
+    ceiling_ptr->set_material(matte_ptr3->clone());
+    add_object(ceiling_ptr);
+
+
+    // the two boxes defined as 5 rectangles each
+
+    // short box
+
+    // top
+
+    p0 = Point3D(13.0, 16.5, 6.5);
+    a = Vector3D(-4.8, 0.0, 16.0);
+    b = Vector3D(16.0, 0.0, 4.9);
+    normal = Normal(0.0, 1.0, 0.0);
+    Rectangle* short_top_ptr = new Rectangle(p0, a, b, normal);
+    short_top_ptr->set_material(matte_ptr3->clone());
+    add_object(short_top_ptr);
+
+
+    // side 1
+
+    p0 = Point3D(13.0, 0.0, 6.5);
+    a = Vector3D(-4.8, 0.0, 16.0);
+    b = Vector3D(0.0, 16.5, 0.0);
+    Rectangle* short_side_ptr1 = new Rectangle(p0, a, b);
+    short_side_ptr1->set_material(matte_ptr3->clone());
+    add_object(short_side_ptr1);
+
+
+    // side 2
+
+    p0 = Point3D(8.2, 0.0, 22.5);
+    a = Vector3D(15.8, 0.0, 4.7);
+    Rectangle* short_side_ptr2 = new Rectangle(p0, a, b);
+    short_side_ptr2->set_material(matte_ptr3->clone());
+    add_object(short_side_ptr2);
+
+
+    // side 3
+
+    p0 = Point3D(24.2, 0.0, 27.4);
+    a = Vector3D(4.8, 0.0, -16.0);
+    Rectangle* short_side_ptr3 = new Rectangle(p0, a, b);
+    short_side_ptr3->set_material(matte_ptr3->clone());
+    add_object(short_side_ptr3);
+
+
+    // side 4
+
+    p0 = Point3D(29.0, 0.0, 11.4);
+    a = Vector3D(-16.0, 0.0, -4.9);
+    Rectangle* short_side_ptr4 = new Rectangle(p0, a, b);
+    short_side_ptr4->set_material(matte_ptr3->clone());
+    add_object(short_side_ptr4);
+
+
+
+
+    // tall box
+
+    // top
+
+    p0 = Point3D(42.3, 33.0, 24.7);
+    a = Vector3D(-15.8, 0.0, 4.9);
+    b = Vector3D(4.9, 0.0, 15.9);
+    normal = Normal(0.0, 1.0, 0.0);
+    Rectangle* tall_top_ptr = new Rectangle(p0, a, b, normal);
+    tall_top_ptr->set_material(matte_ptr3->clone());
+    add_object(tall_top_ptr);
+
+
+    // side 1
+
+    p0 = Point3D(42.3, 0.0, 24.7);
+    a = Vector3D(-15.8, 0.0, 4.9);
+    b = Vector3D(0.0, 33.0, 0.0);
+    Rectangle* tall_side_ptr1 = new Rectangle(p0, a, b);
+    tall_side_ptr1->set_material(matte_ptr3->clone());
+    add_object(tall_side_ptr1);
+
+
+    // side 2
+
+    p0 = Point3D(26.5, 0.0, 29.6);
+    a = Vector3D(4.9, 0.0, 15.9);
+    Rectangle* tall_side_ptr2 = new Rectangle(p0, a, b);
+    tall_side_ptr2->set_material(matte_ptr3->clone());
+    add_object(tall_side_ptr2);
+
+
+    // side 3
+
+    p0 = Point3D(31.4, 0.0, 45.5);
+    a = Vector3D(15.8, 0.0, -4.9);
+    Rectangle* tall_side_ptr3 = new Rectangle(p0, a, b);
+    tall_side_ptr3->set_material(matte_ptr3->clone());
+    add_object(tall_side_ptr3);
+
+
+    // side 4
+
+    p0 = Point3D(47.2, 0.0, 40.6);
+    a = Vector3D(-4.9, 0.0, -15.9);
+    Rectangle* tall_side_ptr4 = new Rectangle(p0, a, b);
+    tall_side_ptr4->set_material(matte_ptr3->clone());
+    add_object(tall_side_ptr4);
 
     render_res = new RGBColor[vp.hres*vp.vres];
 }
@@ -232,6 +362,8 @@ void MainWindow::render()
     QGraphicsScene *UIscene = ui->graphicsView->scene();
     UIscene->clear();
     UIscene->addPixmap(QPixmap::fromImage(img));
+    QString filename = QString("res.png");
+    img.save(filename);
     return;
 }
 

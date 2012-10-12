@@ -14,6 +14,8 @@ fixed wrong normal in axisaligned box, normal should point outside
       fixed some bugs in Thinlens
       added function shadow_hit in class Instance
 
+9.23: Cornell box passed
+
 -------------------------------
 problems:
 
